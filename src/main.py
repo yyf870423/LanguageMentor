@@ -1,4 +1,5 @@
 import gradio as gr
+print("Gradio version:", gr.__version__)
 from tabs.scenario_tab import create_scenario_tab
 from tabs.conversation_tab import create_conversation_tab
 from tabs.vocab_tab import create_vocab_tab

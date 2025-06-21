@@ -31,9 +31,10 @@ def start_new_scenario_chatbot(scenario):
 
 # 场景代理处理函数，根据选择的场景调用相应的代理
 def handle_scenario(user_input, chat_history, scenario):
-    bot_message = agents[scenario].chat_with_history(user_input)  # 获取场景代理的回复
-    LOG.info(f"[ChatBot]: {bot_message}")  # 记录场景代理的回复
-    return bot_message  # 返回场景代理的回复
+    # chat_history: list of dicts with 'role' and 'content'
+    bot_message = agents[scenario].chat_with_history(user_input)
+    LOG.info(f"[ChatBot]: {bot_message}")
+    return {"role": "assistant", "content": bot_message}
 
 def create_scenario_tab():
     with gr.Tab("场景"):  # 场景标签
@@ -52,8 +53,9 @@ def create_scenario_tab():
 
         scenario_intro = gr.Markdown()  # 场景介绍文本组件
         scenario_chatbot = gr.Chatbot(
-            placeholder="<strong>你的英语私教 DjangoPeng</strong><br><br>选择场景后开始对话吧！",  # 聊天机器人的占位符
-            height=600,  # 聊天窗口高度
+            placeholder="<strong>你的英语私教 DjangoPeng</strong><br><br>选择场景后开始对话吧！",
+            height=600,
+            type="messages",
         )
 
         # 更新场景介绍并在场景变化时启动新会话
@@ -63,13 +65,19 @@ def create_scenario_tab():
             outputs=[scenario_intro, scenario_chatbot],  # 输出为场景介绍和聊天机器人组件
         )
 
-        # 场景聊天界面
+        def handle_retry(history, retry_data: gr.RetryData):
+            return history
+        def handle_undo(history, undo_data: gr.UndoData):
+            return history
+        def handle_clear():
+            return []
+        scenario_chatbot.retry(handle_retry, scenario_chatbot, scenario_chatbot)
+        scenario_chatbot.undo(handle_undo, scenario_chatbot, scenario_chatbot)
+        scenario_chatbot.clear(handle_clear, outputs=scenario_chatbot)
         gr.ChatInterface(
             fn=handle_scenario,  # 处理场景聊天的函数
             chatbot=scenario_chatbot,  # 聊天机器人组件
             additional_inputs=scenario_radio,  # 额外输入为场景选择
-            retry_btn=None,  # 不显示重试按钮
-            undo_btn=None,  # 不显示撤销按钮
-            clear_btn="清除历史记录",  # 清除历史记录按钮文本
             submit_btn="发送",  # 发送按钮文本
+            type="messages",
         )

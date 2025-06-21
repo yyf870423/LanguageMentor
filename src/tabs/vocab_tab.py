@@ -7,7 +7,7 @@ from utils.logger import LOG
 # 初始化词汇代理，负责管理词汇学习会话
 vocab_agent = VocabAgent()
 
-# 定义功能名称为“vocab_study”，表示词汇学习模块
+# 定义功能名称为"vocab_study"，表示词汇学习模块
 feature = "vocab_study"
 
 # 获取页面描述，从指定的 markdown 文件中读取介绍内容
@@ -38,13 +38,13 @@ def restart_vocab_study_chatbot():
 
 # 处理用户输入的单词学习消息，并与词汇代理互动获取机器人的响应
 def handle_vocab(user_input, chat_history):
-    bot_message = vocab_agent.chat_with_history(user_input)  # 获取机器回复
-    LOG.info(f"[Vocab ChatBot]: {bot_message}")  # 记录机器人回应信息
-    return bot_message
+    bot_message = vocab_agent.chat_with_history(user_input)
+    LOG.info(f"[Vocab ChatBot]: {bot_message}")
+    return {"role": "assistant", "content": bot_message}
 
 # 创建词汇学习的 Tab 界面
 def create_vocab_tab():
-    # 创建一个 Tab，标题为“单词”
+    # 创建一个 Tab，标题为"单词"
     with gr.Tab("单词"):
         gr.Markdown("## 闯关背单词")  # 添加 Markdown 标题
 
@@ -55,9 +55,10 @@ def create_vocab_tab():
         vocab_study_chatbot = gr.Chatbot(
             placeholder="<strong>你的英语私教 DjangoPeng</strong><br><br>开始学习新单词吧！",
             height=800,
+            type="messages",
         )
 
-        # 创建一个按钮，用于重置词汇学习状态，值为“下一关”
+        # 创建一个按钮，用于重置词汇学习状态，值为"下一关"
         restart_btn = gr.ClearButton(value="下一关")
 
         # 当用户点击按钮时，调用 restart_vocab_study_chatbot 函数
@@ -67,12 +68,18 @@ def create_vocab_tab():
             outputs=vocab_study_chatbot,
         )
 
-        # 创建聊天接口，包含处理用户消息的函数，并关联聊天机器人组件
+        def handle_retry(history, retry_data: gr.RetryData):
+            return history
+        def handle_undo(history, undo_data: gr.UndoData):
+            return history
+        def handle_clear():
+            return []
+        vocab_study_chatbot.retry(handle_retry, vocab_study_chatbot, vocab_study_chatbot)
+        vocab_study_chatbot.undo(handle_undo, vocab_study_chatbot, vocab_study_chatbot)
+        vocab_study_chatbot.clear(handle_clear, outputs=vocab_study_chatbot)
         gr.ChatInterface(
             fn=handle_vocab,  # 处理用户输入的函数
             chatbot=vocab_study_chatbot,  # 关联的聊天机器人组件
-            retry_btn=None,  # 不显示重试按钮
-            undo_btn=None,  # 不显示撤销按钮
-            clear_btn=None,  # 学习下一批新单词按钮
             submit_btn="发送",  # 发送按钮的文本
+            type="messages",
         )
