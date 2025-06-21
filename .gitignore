@@ -167,3 +167,5 @@ jupyter/*
 venv/
 
 logs/app.log
+
+.gradio/
