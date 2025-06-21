@@ -162,3 +162,8 @@ cython_debug/
 #.idea/
 
 jupyter/*
+
+# Python virtual environment
+venv/
+
+logs/app.log

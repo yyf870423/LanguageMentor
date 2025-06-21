@@ -1,7 +1,7 @@
 import json
 import random
 
-from langchain_ollama.chat_models import ChatOllama  # 导入 ChatOllama 模型
+from langchain_openai import ChatOpenAI  # 导入 ChatOpenAI 模型
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder  # 导入提示模板相关类
 from langchain_core.messages import HumanMessage, AIMessage  # 导入人类消息类和AI消息类
 from langchain_core.runnables.history import RunnableWithMessageHistory  # 导入带有消息历史的可运行类
@@ -44,9 +44,9 @@ class ScenarioAgent:
                 MessagesPlaceholder(variable_name="messages"),  # 消息占位符
             ])
 
-            # 初始化 ChatOllama 模型，配置模型参数
-            self.chatbot = system_prompt | ChatOllama(
-                model="llama3.1:8b-instruct-q8_0",  # 使用的模型名称
+            # 初始化 ChatOpenAI 模型，配置模型参数
+            self.chatbot = system_prompt | ChatOpenAI(
+                model="gpt-4o-mini",  # 使用的模型名称
                 max_tokens=8192,  # 最大生成的token数
                 temperature=0.8,  # 生成文本的随机性
             )
